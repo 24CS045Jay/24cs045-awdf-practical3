@@ -1,4 +1,4 @@
-# Practical 2: State Management and Routing in React
+# Practical 3: API Integration and Data Rendering in React
 
 **Student Details:**
 - **Name:** Jay Ladva
@@ -9,25 +9,58 @@
 
 ---
 
-## 📌 Overview
-This project extends the student portfolio application from Practical 1 by introducing client-side multi-page routing via **React Router v6** and reactive state management using the **`useState`** hook.
+## 📌 Practical 3 Overview & Objective
+To consume a public REST API (**GitHub REST API**) in React and handle asynchronous lifecycle states (**loading**, **error**, and **success**) using React's **`useEffect`** and **`useState`** hooks.
 
-## 🚀 Implemented Features & Routes
+The **Projects** page (`src/components/Projects.jsx`) built in Practical 2 serves as the integration point, transforming static project data into dynamic, real-time repository cards fetched directly from GitHub.
 
-### 1. Navigation & Routing (React Router v6)
-- **`<BrowserRouter>`**: Wraps the application in `src/main.jsx`.
-- **`<NavBar />`**: Navigation bar with client-side `<NavLink>` links (no page reloads):
-  - `/` → **Home (`<Home />`)**: Personal introduction, department, and technical skills.
-  - `/projects` → **Projects (`<Projects />`)**: Showcase of student projects with dynamic state filtering.
-  - `/contact` → **Contact (`<Contact />`)**: Real-time controlled form and interactive feedback.
-  - `*` → **404 Not Found (`<NotFound />`)**: Fallback error route with easy navigation back to Home.
+---
 
-### 2. Reactive State Management (`useState`)
-- **Controlled Contact Input**: Captures user input and synchronizes state in real time via `onChange`.
-- **Live Character Counter**: Computes and displays the length of the message in real time.
-- **UI Visibility Toggle**: Toggles help tips and FAQs on the contact page.
-- **Dark/Light Mode Theme Toggle**: Managed at the application root level with CSS theme classes (`.dark-theme` / `.light-theme`).
-- **Category Filter State**: Filter projects on the Projects page by category (`All`, `React`, `Frontend`, `FullStack`).
+## 🏗️ Architecture & Component Flow
+```
+Projects.jsx
+ ├── useEffect() → triggers asynchronous fetch on component mount
+ ├── useState: repos (data), loading, error, searchQuery, simulateError
+ ├── [loading] → <Spinner />
+ ├── [error]   → <ErrorMessage message={error} onRetry={handleRetry} />
+ └── [success] → <RepoList data={filteredRepos} />
+```
+
+---
+
+## 🚀 Implemented Features
+
+### 1. Asynchronous REST API Integration (`useEffect`)
+- **API Endpoint:** `https://api.github.com/users/24CS045Jay/repos?sort=updated`
+- Initiates the `fetch` request immediately upon component mount via `useEffect` with an empty dependency array `[]` (plus trigger variables for retry and testing), preventing infinite re-fetching cycles.
+- Correctly parses responses and validates `res.ok` to catch HTTP errors (such as 404 Not Found or 403 Rate Limit Exceeded).
+
+### 2. Tri-State Lifecycle Management (`useState`)
+- **`repos` (Array):** Stores the parsed array of repository objects.
+- **`loading` (Boolean):** Set to `true` while the network request is in flight and safely cleared in `.finally(() => setLoading(false))`.
+- **`error` (String | null):** Captures error descriptions or network failures to render graceful diagnostic feedback.
+
+### 3. Loading Spinner Component (`<Spinner />`)
+- Displays an animated circular spinner with informative textual feedback while the asynchronous request is pending.
+
+### 4. Error Message Component (`<ErrorMessage />`)
+- Renders an alert box with diagnostic hints when an API request fails, preventing crashes and blank screens.
+
+### 5. Supplementary Problem: Interactive Retry Button
+- Includes a **Retry API Request** button in `<ErrorMessage />` and a **Refresh** button in the header that resets error/loading states and re-executes the API fetch without requiring a full page refresh.
+
+### 6. Supplementary Problem: Real-Time Search & Filtering
+- Includes a search input above the repository list that dynamically filters repositories by name in real time (`filteredRepos`).
+- Displays a dynamic count of filtered vs. total repositories (e.g., *Showing 14 of 30 repositories*).
+
+### 7. Supplementary Problem: Repository Star Count & Metadata Rendering
+- Displays the star count (⭐ `stargazers_count`) and fork count (🍴 `forks_count`) alongside the repository title.
+- Shows primary language badges, repository description, public/private status, and direct GitHub links.
+
+### 8. Lab Verification: Error Path Simulation Toggle
+- An interactive **Simulate Error Path** button in the UI temporarily alters the endpoint to test and verify the error state and retry functionality on demand.
+
+---
 
 ## 🛠️ Setup & Running Locally
 
@@ -45,3 +78,13 @@ This project extends the student portfolio application from Practical 1 by intro
    ```bash
    npm run build
    ```
+
+4. **Lint and code check:**
+   ```bash
+   npm run lint
+   ```
+
+---
+
+## 📄 Lab Documentation Deliverable
+- Updated report generated as **`pract-3-awdf-24cs045.docx`** with the updated Aim, source code, repository links, detailed output explanations, and 4 high-resolution screenshots.
